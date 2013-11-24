@@ -1,0 +1,26 @@
+# BOA
+_AEGIR_VERSION: BOA-2.1.1
+
+# mysql
+mysql_root_password: 'MYSQL_ROOT_PASSWORD'
+
+# drush versions
+drush4_version: '4.6-dev'
+drush5_version: '5.10.0'
+drush6_version: '6.1.0'
+default_drush: 6
+
+# redis
+_REDIS_VERSION: '2.6.16'
+
+# nginx
+nginx_rebuild: false
+_NGINX_VERSION: '1.5.6'
+nginx_spdy: true
+nginx_upload_progress: true
+nginx_cache_purge: false
+nginx_build_options: ''
+
+# newrelic
+newrelic_license_key: 'NEWRELIC_KEY'
+newrelic_mysql_version: '1.0.9'

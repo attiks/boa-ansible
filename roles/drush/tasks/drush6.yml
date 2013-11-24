@@ -1,0 +1,23 @@
+- name: Drush 6 | Get drush
+  get_url: url=https://github.com/drush-ops/drush/archive/{{ drush6_version }}.zip dest=/tmp/drush6.zip 
+
+- name: Drush 6 | Remove old dirs
+  command: chdir=/tmp rm -rf /tmp/drush-{{ drush6_version }}
+
+- name: Drush 6 | Make destination folder
+  command: mkdir -p /opt/tools/drush/6
+      
+- name: Drush 6 | Unzip drush
+  command: chdir=/tmp creates=/opt/tools/drush/6/drush-{{ drush6_version }} unzip -qo drush6.zip -d /opt/tools/drush/6
+
+- name: Drush 6 | Remove drush 6 dir
+  command: removes=/opt/tools/drush/6/drush rm -rf /opt/tools/drush/6/drush
+
+- name: Drush 6 | Rename drush 6 dir
+  command: creates=/opt/tools/drush/6/drush mv /opt/tools/drush/6/drush-{{ drush6_version }} /opt/tools/drush/6/drush
+
+- name: Drush 6 | Symlink
+  file: src=/opt/tools/drush/6/drush/drush dest=/usr/bin/drush6 state=link mode=755
+
+- name: Drush 6 | Run drush once so it downloads it's dependencies
+  action: command drush6

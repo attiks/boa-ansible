@@ -1,0 +1,14 @@
+# Only run "update_cache=yes" if the last one is more than more than 3600 seconds ago
+- name: PHP5 | Update apt cache
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: PHP5 | Install php5
+  apt: pkg={{ item }} state=installed
+  with_items:
+    - php5
+    - php5-mysql
+    - php-apc
+    - php5-xmlrpc
+    - php-soap
+    - php5-gd
+    - php-pear

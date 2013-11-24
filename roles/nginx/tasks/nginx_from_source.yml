@@ -1,0 +1,72 @@
+- name: Nginx core | Update apt cache
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Nginx core | Dependencies
+  apt: pkg={{ item }} state=present
+  with_items:
+      - libpcre3
+      - libpcre3-dev
+      - libgeoip-dev
+
+- name: Nginx core | Remove nginx dir
+  command: chdir=/var/opt removes=/var/opt/nginx* rm -rf /var/opt/nginx*
+
+# nginx
+- name: Nginx core | Get archive
+  get_url: url=http://files.aegir.cc/dev/src/nginx-{{ _NGINX_VERSION }}.tar.gz dest=/var/opt/nginx-{{ _NGINX_VERSION }}.tar.gz
+
+- name: Nginx core | Extract archive
+  command: chdir=/var/opt creates=/var/opt/nginx-{{ _NGINX_VERSION }} tar xvf nginx-{{ _NGINX_VERSION }}.tar.gz
+
+- name: Nginx core | Remove archive
+  command: removes=/var/opt/nginx-{{ _NGINX_VERSION }}.tar.gz rm /var/opt/nginx-{{ _NGINX_VERSION }}.tar.gz
+
+# nginx-upload-progress-module
+- name: Nginx upload | Get archive
+  get_url: url=http://files.aegir.cc/dev/src/nginx-upload-progress-module.tar.gz dest=/var/opt/nginx-upload-progress-module.tar.gz
+  when: nginx_upload_progress
+
+- name: Nginx upload | Extract archive
+  command: chdir=/var/opt creates=/var/opt/nginx-upload-progress-module tar xvf nginx-upload-progress-module.tar.gz
+  when: nginx_upload_progress
+
+- name: Nginx upload | Remove archive
+  command: removes=/var/opt/nginx-upload-progress-module.tar.gz rm /var/opt/nginx-upload-progress-module.tar.gz
+  when: nginx_upload_progress
+
+- name: Nginx upload | Set option
+  set_fact:
+    nginx_build_options: "{{ nginx_build_options }} --add-module=/var/opt/nginx-upload-progress-module/"
+  when: nginx_upload_progress
+
+# ngx-cache-purge
+- name: Nginx purge | Get archive
+  get_url: url=http://files.aegir.cc/dev/src/ngx-cache-purge.tar.gz dest=/var/opt/ngx-cache-purge.tar.gz
+  when: nginx_cache_purge
+
+- name: Nginx purge | Extract archive
+  command: chdir=/var/opt creates=/var/opt/ngx-cache-purge tar xvf ngx-cache-purge.tar.gz
+  when: nginx_cache_purge
+
+- name: Nginx purge | Remove archive
+  command: removes=/var/opt/ngx-cache-purge.tar.gz rm /var/opt/ngx-cache-purge.tar.gz
+  when: nginx_cache_purge
+
+- name: Nginx purge | Set option
+  set_fact:
+    nginx_build_options: "{{ nginx_build_options }} --add-module=/var/opt/ngx-cache-purge/"
+  when: nginx_cache_purge
+
+# spdy - nginx_spdy
+- name: Nginx spdy | Set option
+  set_fact:
+    nginx_build_options: "{{ nginx_build_options }} --with-http_spdy_module"
+  when: nginx_spdy
+
+# compile time
+- name: Nginx core | Configure
+  command: chdir=/var/opt/nginx-{{ _NGINX_VERSION }} sh ./configure --prefix=/usr --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --user=www-data --group=www-data --with-http_realip_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_ssl_module --with-http_dav_module --with-http_flv_module --with-http_mp4_module --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module --without-http_scgi_module --without-http_uwsgi_module --with-ipv6 --with-http_geoip_module --with-debug {{ nginx_build_options }}
+- name: Nginx core | Make
+  command: chdir=/var/opt/nginx-{{ _NGINX_VERSION }} make --quiet
+- name: Nginx core | Install
+  command: chdir=/var/opt/nginx-{{ _NGINX_VERSION }} make --quiet install

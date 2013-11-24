@@ -1,0 +1,15 @@
+- name: NewRelic | add newrelic repo to apt sources
+  action: copy src=../templates/newrelic.list dest=/etc/apt/sources.list.d/newrelic.list
+- name: NewRelic | add newrelic key to the apt repo
+  action: apt_key url=http://download.newrelic.com/548C16BF.gpg state=present
+- name: NewRelic | update package list
+  action: apt update_cache=yes
+- name: NewRelic | ensure newrelic-sysmond is installed
+  action: apt pkg=newrelic-sysmond state=present
+- name: NewRelic | update newrelic nrsysmond.cfg with license key
+  action: copy src=../templates/nrsysmond.cfg.j2 dest=/etc/newrelic/nrsysmond.cfg
+- name: NewRelic | ensure proper permissions on nrsysmond.cfg file
+  action: file path=/etc/newrelic/nrsysmond.cfg mode=0640 owner=root group=newrelic
+- name: NewRelic | start newrelic-sysmond
+  service: name=newrelic-sysmond state=started
+

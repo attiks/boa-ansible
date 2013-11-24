@@ -1,0 +1,16 @@
+env JAVA_HOME=/usr/lib/jvm/java-7-oracle
+env MYSQL_PLUGIN_HOME=/opt/newrelic_agent/newrelic_mysql_plugin
+env MYSQL_PLUGIN_JAR=/opt/newrelic_agent/newrelic_mysql_plugin/newrelic_mysql_plugin-*.jar
+
+setuid newrelic
+start on (filesystem and net-device-up IFACE=lo) or runlevel [2345]
+stop on runlevel [!2345]
+respawn
+respawn limit 3 5
+
+script
+echo $* 1>&2
+echo "Starting New Relic MySQL Plugin $MYSQL_PLUGIN_JAR"
+cd $MYSQL_PLUGIN_HOME
+exec /usr/bin/java -jar $MYSQL_PLUGIN_JAR
+end script 

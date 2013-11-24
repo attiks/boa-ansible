@@ -1,0 +1,7 @@
+- name: Check if path exists
+  stat: path=/etc/newrelic/nrsysmond.cfg
+  register: already_installed
+- include: install_newrelic.yml
+  when: already_installed.stat.exists == false
+# needs java :/ - include: install_newrelic_mysql.yml
+- include: install_newrelic_plugin_agent.yml

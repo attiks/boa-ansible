@@ -1,0 +1,7 @@
+- name: Check if nginx is installed
+  shell: nginx -v 2>&1 | tr -d "\n" | cut -d " " -f3 | cut -d "/" -f2 | awk '{ print $1}'
+  register: nginx_already_installed
+  ignore_errors: yes
+
+- include: nginx_from_source.yml
+  when: nginx_rebuild or (nginx_already_installed and nginx_already_installed.stdout != '{{ _NGINX_VERSION }}')

@@ -1,0 +1,7 @@
+- name: Check if redis is installed
+  shell: redis-server -v 2>&1 | tr -d "\n" | tr -d "v=" | cut -d" " -f3 | awk '{ print $1}'
+  register: redis_already_installed
+  ignore_errors: yes
+
+- include: redis_from_source.yml
+  when: redis_already_installed and redis_already_installed.stdout != '{{ _REDIS_VERSION }}'

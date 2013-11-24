@@ -1,0 +1,14 @@
+- hosts: test_servers
+  sudo_user: root
+  sudo: yes
+  roles:
+     - role: common
+     - role: mysql
+     - role: php5
+     - role: drush
+     - role: redis
+     - role: nginx
+     - role: newrelic
+
+  vars_files:
+    - settings.yml

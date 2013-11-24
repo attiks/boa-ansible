@@ -1,0 +1,9 @@
+# Only run "update_cache=yes" if the last one is more than more than 3600 seconds ago
+- name: update cache
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Install apache
+  apt: pkg=apache2 state=present
+
+- name: Install memcache
+  apt: pkg=memcached state=present

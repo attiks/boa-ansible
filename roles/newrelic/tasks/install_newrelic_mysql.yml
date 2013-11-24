@@ -1,0 +1,35 @@
+- name: NewRelic mysql | Remove dir
+  command: creates=/opt/newrelic_agent mkdir -p /opt/newrelic_agent
+
+- name: NewRelic mysql | Remove dir
+  command: chdir=/opt/newrelic_agent removes=/opt/newrelic_agent/newrelic_mysql_plugin rm -rf /opt/newrelic_agent/newrelic_mysql_plugin
+
+- name: NewRelic mysql | Get archive
+  get_url: url=https://rpm.newrelic.com/plugins/52/ce6780ac1ae555cb99948d9c12a54bd4 dest=/opt/newrelic_agent/newrelic_mysql_plugin.tar.gz
+
+- name: NewRelic mysql | Extract archive
+  command: chdir=/opt/newrelic_agent creates=/opt/newrelic_agent/newrelic_mysql_plugin-{{ newrelic_mysql_version }} tar xzvf newrelic_mysql_plugin.tar.gz
+
+- name: NewRelic mysql | Remove archive
+  command: removes=/opt/newrelic_agent/newrelic_mysql_plugin.tar.gz rm /opt/newrelic_agent/newrelic_mysql_plugin.tar.gz
+
+- name: NewRelic mysql | Move directory
+  command: removes=/opt/newrelic_agent/newrelic_mysql_plugin-{{ newrelic_mysql_version }} creates=/opt/newrelic_agent/newrelic_mysql_plugin mv /opt/newrelic_agent/newrelic_mysql_plugin-{{ newrelic_mysql_version }} /opt/newrelic_agent/newrelic_mysql_plugin
+
+- name: NewRelic | copy config
+  action: copy src=../templates/newrelic.properties.j2 dest=/opt/newrelic_agent/newrelic_mysql_plugin/config/newrelic.properties
+
+- name: NewRelic | copy config
+  action: copy src=../templates/mysql.instance.json.j2 dest=/opt/newrelic_agent/newrelic_mysql_plugin/config/mysql.instance.json
+
+- name: NewRelic | copy upstart script
+  action: copy src=../templates/newrelic_mysql_plugin.j2 dest=/etc/init.d/newrelic_mysql_plugin
+
+- name: NewRelic | ensure proper permissions on
+  action: file path=/etc/init.d/newrelic_mysql_plugin mode=0755 owner=root group=root
+  
+- name: NewRelic | Update rc
+  command: update-rc.d newrelic_mysql_plugin defaults
+
+- name: NewRelic | start newrelic_mysql_plugin
+  service: name=newrelic_mysql_plugin state=started

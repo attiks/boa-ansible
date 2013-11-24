@@ -1,0 +1,23 @@
+- name: MySQL | Update apt cache
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: NewRelic agent | ensure pip is installed
+  action: apt pkg=python-pip state=present
+
+- name: NewRelic agent | ensure pip is installed
+  pip: name=newrelic-plugin-agent state=present
+
+- name: NewRelic agent | copy config
+  action: copy src=../templates/newrelic_plugin_agent.cfg.j2 dest=/etc/newrelic/newrelic_plugin_agent.cfg
+
+- name: NewRelic agent | copy upstart script
+  action: command creates=/etc/init.d/newrelic_plugin_agent cp /opt/newrelic_plugin_agent/newrelic_plugin_agent.deb /etc/init.d/newrelic_plugin_agent
+
+- name: NewRelic agent | ensure proper permissions on
+  action: file path=/etc/init.d/newrelic_plugin_agent mode=0755 owner=root group=root
+  
+- name: NewRelic agent | Update rc
+  command: update-rc.d newrelic_plugin_agent defaults
+
+- name: NewRelic agent | Start newrelic_plugin_agent
+  service: name=newrelic_plugin_agent state=started

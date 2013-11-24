@@ -1,0 +1,66 @@
+- name: Redis | Ensure group exists
+  group: name=redis system=yes state=present
+
+- name: Redis | Ensure user exists
+  user: name=redis comment="Redis" system=yes createhome=no group=redis state=present
+
+- name: Redis | Remove redis dir
+  command: removes=/var/opt/redis* rm -rf /var/opt/redis*
+
+- name: Redis | Remove redis temp dir
+  command: removes=/tmp/redis rm -rf /tmp/redis-{{ _REDIS_VERSION }}
+
+- name: Redis | Get redis
+  get_url: url=http://files.aegir.cc/dev/src/redis-{{ _REDIS_VERSION }}.tar.gz dest=/tmp/redis.tar.gz 
+
+- name: Redis | Extract redis
+  command: chdir=/tmp creates=/tmp/redis-{{ _REDIS_VERSION }} tar xvf redis.tar.gz
+
+- name: Redis | Remove archive
+  command: removes=/tmp/redis.tar.gz rm /tmp/redis.tar.gz
+
+- name: Redis | Make
+  command: chdir=/tmp/redis-{{ _REDIS_VERSION }} make --quiet
+
+- name: Redis | Make install
+  command: chdir=/tmp/redis-{{ _REDIS_VERSION }} make --quiet install
+
+- name: Redis | Stop service
+  service: name=redis-server state=stopped
+  ignore_errors: yes
+
+- name: Redis | Copy to usr/bin
+  command: creates=/usr/bin/redis-server cp /usr/local/bin/redis-server /usr/bin/redis-server
+
+- name: Redis | Copy start script
+  action: copy src=../templates/redis-server dest=/etc/init.d/redis-server
+
+- name: Redis | ensure proper permissions on
+  action: file path=/etc/init.d/redis-server mode=0755 owner=root group=root
+  
+- name: Redis | Update rc
+  command: update-rc.d redis-server defaults
+
+- name: Redis | Log dir
+  command: creates=/var/log/redis mkdir -p /var/log/redis
+
+- name: Redis | Log dir permission
+  action: file path=/var/log/redis mode=0755 owner=redis group=redis state=directory
+
+- name: Redis | Lib dir
+  command: creates=/var/lib/redis mkdir -p /var/lib/redis
+
+- name: Redis | Lib dir permission
+  action: file path=/var/lib/redis mode=0755 owner=redis group=redis state=directory
+
+- name: Redis | Etc dir
+  command: creates=/etc/redis mkdir -p /etc/redis
+
+- name: Redis | Etc dir permission
+  action: file path=/etc/redis mode=0755 owner=redis group=redis state=directory
+
+- name: Redis | Copy conf
+  action: copy src=../templates/redis.conf dest=/etc/redis/redis.conf
+
+- name: Redis | Start service
+  service: name=redis-server state=started

@@ -1,0 +1,20 @@
+- name: Drush 4 | Get drush
+  get_url: url=http://files.aegir.cc/dev/{{ _AEGIR_VERSION }}/drush-{{ drush4_version }}.tar.gz dest=/tmp/drush4.tar.gz 
+
+- name: Drush 4 | Remove old dirs
+  command: chdir=/tmp rm -rf /tmp/drush-{{ drush4_version }}
+
+- name: Drush 4 | Make destination folder
+  command: mkdir -p /opt/tools/drush/4
+      
+- name: Drush 4 | Remove drush 4 dir
+  command: removes=/opt/tools/drush/4/drush rm -rf /opt/tools/drush/4/drush
+
+- name: Drush 4 | Extract drush
+  command: chdir=/tmp creates=/opt/tools/drush/4/drush-{{ drush4_version }} tar xvzf drush4.tar.gz -C /opt/tools/drush/4
+
+- name: Drush 4 | Symlink
+  file: src=/opt/tools/drush/4/drush/drush dest=/usr/bin/drush4 state=link mode=744
+
+- name: Drush 4 | Run drush once so it downloads it's dependencies
+  action: command drush

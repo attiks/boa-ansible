@@ -1,0 +1,41 @@
+# Only run "update_cache=yes" if the last one is more than more than 3600 seconds ago
+- name: Drush | Update PEAR
+  action: command pear upgrade-all
+
+- name: Drush | Setup PEAR channel
+  action: command pear channel-discover pear.drush.org creates=/usr/share/php/.channels/pear.drush.org.reg
+
+- name: Check if drush 4 is installed
+  shell: drush --version --pipe
+  register: drush4_already_installed
+  ignore_errors: yes
+
+- include: drush4.yml
+  when: drush4_already_installed and drush4_already_installed.stdout != '{{ drush4_version }}'
+
+- name: Check if drush 5 is installed
+  shell: drush5 --version --pipe
+  register: drush5_already_installed
+  ignore_errors: yes
+
+- include: drush5.yml
+  when: drush5_already_installed and drush5_already_installed.stdout != '{{ drush5_version }}'
+
+- name: Check if drush 6 is installed
+  shell: drush6 --version --pipe
+  register: drush6_already_installed
+  ignore_errors: yes
+
+- include: drush6.yml
+  when: drush6_already_installed and drush6_already_installed.stdout != '{{ drush6_version }}'
+
+# Set default drush alias
+- name: Drush | Symlink default drush
+  file: src=/opt/tools/drush/4/drush/drush dest=/usr/bin/drush state=link mode=744
+  when: default_drush == 4
+- name: Drush | Symlink default drush
+  file: src=/opt/tools/drush/5/drush/drush dest=/usr/bin/drush state=link mode=755
+  when: default_drush == 5
+- name: Drush | Symlink default drush
+  file: src=/opt/tools/drush/6/drush/drush dest=/usr/bin/drush state=link mode=755
+  when: default_drush == 6
